@@ -52,6 +52,28 @@ print(eng.trades().head())
 
 完整可运行示例见 [`examples/demo.py`](examples/demo.py)。
 
+## 真实数据回测
+在**真实 A 股日线行情**上跑通两套引擎，并把结果落盘为可复现的研究产物。
+
+```bash
+python examples/real_backtest.py \
+    --data-dir /home/zhuoming.wang/quant-hub/kairos/kairos-data/data/ashare
+```
+
+- **数据加载** `kairos_backtest.realdata.load_close_panel(data_dir)`：读取目录下 `*.csv`
+  （`date,open,high,low,close,volume`），按**同系列口径**清洗——非正价→NaN、`ffill` 衔接
+  停牌/缺失、按**全体上市日**裁剪到公共有效区间，返回无缺口的 `date x symbol` 收盘价面板。
+- **向量化**：横截面动量 Top-K（自研权重面板，信号只用截至当期数据）经 `VectorBacktester`
+  扣成本回测，对照**等权买入持有**基准。
+- **事件驱动**：单标的 `Strategy` 子类做双均线择时，经 `BacktestEngine` 在真实价上逐 bar 运行、
+  **下一 bar 成交**，对照**买入持有**基准，输出成交明细。
+- **产物**（写入 `research/real_backtest/`）：`REPORT.md`（中文报告：累计收益/CAGR/夏普/索提诺/
+  最大回撤/卡玛/换手 + 基准对照 + 诚实结论）、`equity.csv`（净值曲线）、`metrics.json`（结构化指标）、
+  `trades.csv`（成交明细）。
+
+> **数据声明**：示例行情为**公开来源、前复权**的 A 股日线，**仅供研究与学习**，不保证准确/完整/及时；
+> 全部回测均为历史模拟，**不构成任何投资建议**。原始数据不在本仓库内，请自备或用 `--data-dir` 指向本地目录。
+
 ## API 概览
 | 模块 | 关键对象 | 说明 |
 |---|---|---|
@@ -60,6 +82,7 @@ print(eng.trades().head())
 | `analytics` | `summary` `sharpe_ratio` `max_drawdown` `cagr` … | 绩效指标 |
 | `costs` | `CostModel` | 佣金 + 滑点 |
 | `sim` | `make_gbm_prices` `momentum_weights` | 合成行情与示例权重 |
+| `realdata` | `load_close_panel` `list_symbols` | 真实行情 CSV → 收盘价面板 |
 
 ## 设计要点
 - **时序对齐**：所有信号在第 `t` 期用截至 `t` 的数据生成，收益在 `t→t+1` 实现，杜绝前视偏差。
@@ -73,9 +96,10 @@ make test          # 或 python -m pytest -q
 
 ## 项目结构
 ```
-kairos_backtest/    核心包（analytics / costs / vectorized / engine / sim）
-examples/           可运行示例
-tests/              pytest 测试
+kairos_backtest/    核心包（analytics / costs / vectorized / engine / sim / realdata）
+examples/           可运行示例（demo.py 合成行情、real_backtest.py 真实数据）
+tests/              pytest 测试（全部离线）
+research/           研究产物（real_backtest/ 内含真实数据回测报告与结果）
 ```
 
 ## 许可

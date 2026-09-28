@@ -7,3 +7,12 @@ build/
 dist/
 .ipynb_checkpoints/
 .DS_Store
+
+# ---- 研究产物 (research artifacts) ----
+# 默认忽略 research/ 下自动生成的产物；显式放行「真实数据回测」示例的
+# 报告(md)、指标(json)、净值与成交明细(csv)，使其可随仓库入库。
+research/*
+!research/real_backtest/
+!research/real_backtest/*.md
+!research/real_backtest/*.json
+!research/real_backtest/*.csv

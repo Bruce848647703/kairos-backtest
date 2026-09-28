@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "data_dir": "/home/zhuoming.wang/quant-hub/kairos/kairos-data/data/ashare",
+    "n_symbols": 38,
+    "symbols_head": [
+      "sh600009",
+      "sh600028",
+      "sh600030",
+      "sh600031",
+      "sh600036"
+    ],
+    "start": "2018-10-16",
+    "end": "2026-09-24",
+    "n_bars": 1931,
+    "years": 7.6627,
+    "commission_rate": 0.0003,
+    "commission_min": 5.0,
+    "slippage_bps": 5.0
+  },
+  "vectorized": {
+    "strategy": "cross_sectional_momentum_topk",
+    "params": {
+      "lookback": 126,
+      "top_k": 5,
+      "rebalance": 21
+    },
+    "momentum": {
+      "periods": 1931.0,
+      "total_return": 1.063659,
+      "cagr": 0.09916,
+      "volatility": 0.263033,
+      "sharpe": 0.49106,
+      "sortino": 0.719632,
+      "max_drawdown": 0.552155,
+      "calmar": 0.179587,
+      "win_rate": 0.493629,
+      "profit_factor": 1.093022,
+      "annual_turnover": 11.208582,
+      "cumulative_turnover": 85.887981,
+      "cum_cost_drag": 0.06871
+    },
+    "equal_weight_buy_hold": {
+      "periods": 1931.0,
+      "total_return": 1.432973,
+      "cagr": 0.123031,
+      "volatility": 0.209378,
+      "sharpe": 0.658973,
+      "sortino": 0.969066,
+      "max_drawdown": 0.449177,
+      "calmar": 0.273904,
+      "win_rate": 0.503627,
+      "profit_factor": 1.120506,
+      "annual_turnover": 0.0
+    }
+  },
+  "event_driven": {
+    "strategy": "sma_cross_timing",
+    "symbol": "sh600519",
+    "params": {
+      "fast": 20,
+      "slow": 60,
+      "cash": 1000000.0
+    },
+    "sma_cross": {
+      "periods": 1931.0,
+      "total_return": 0.952887,
+      "cagr": 0.091275,
+      "volatility": 0.180381,
+      "sharpe": 0.574334,
+      "sortino": 0.872457,
+      "max_drawdown": 0.423842,
+      "calmar": 0.215351,
+      "win_rate": 0.476789,
+      "profit_factor": 1.151395,
+      "annual_turnover": 5.20828,
+      "n_trades": 40.0,
+      "total_commission": 26377.120616
+    },
+    "buy_hold": {
+      "periods": 1931.0,
+      "total_return": 1.183159,
+      "cagr": 0.107265,
+      "volatility": 0.264312,
+      "sharpe": 0.517314,
+      "sortino": 0.784148,
+      "max_drawdown": 0.451496,
+      "calmar": 0.237576,
+      "win_rate": 0.478668,
+      "profit_factor": 1.098847,
+      "annual_turnover": 0.055589,
+      "n_trades": 1.0,
+      "total_commission": 299.552906
+    }
+  }
+}
