@@ -264,7 +264,7 @@ def build_report(meta: dict, vec: dict, evt: dict) -> str:
     L = []
     L.append("# 真实数据回测报告（Real-Data Backtest Report）")
     L.append("")
-    L.append("> **数据声明**：本报告使用的行情为**公开来源、前复权 A 股日线**，"
+    L.append("> **数据声明**：本报告使用的行情为**公开来源、后复权(hfq) A 股日线**，"
              "仅用于**研究与教学演示**，不保证准确/完整/及时，**不构成任何投资建议**。"
              "回测为历史模拟，未考虑全部真实约束，实盘结果可能显著不同。")
     L.append("")
@@ -276,7 +276,7 @@ def build_report(meta: dict, vec: dict, evt: dict) -> str:
              f"（约 {meta['years']:.2f} 年）")
     L.append("- 清洗口径（`load_close_panel`，同系列可比）："
              "**非正价 → NaN → 前向填充 ffill → 按全体上市日裁剪到公共有效区间**。"
-             "前复权可能在早期产生负/零价，故先剔除再填充；裁剪保证面板无缺口、无前视。")
+             "数据为后复权(hfq)，价格恒正、收益率正确；非正价防御性处理用于停牌等异常，裁剪保证面板无缺口、无前视。")
     L.append(f"- 成本模型：佣金 {meta['commission_rate']*10000:.1f}bp（最低 {meta['commission_min']:.0f} 元）"
              f" + 滑点 {meta['slippage_bps']:.0f}bp。年化基准 {TRADING_DAYS} 交易日。")
     L.append("")
@@ -293,13 +293,17 @@ def build_report(meta: dict, vec: dict, evt: dict) -> str:
     L.append(f"- 累计换手 **{vs['cumulative_turnover']:.1f}x**（双边），"
              f"成本拖累约 **{_pct(vs['cum_cost_drag'])}**（毛→净）。")
     L.append("")
+    vec_ret_word = "低于" if vec_ret_gap < 0 else "高于"
+    vec_dd_better = vs["max_drawdown"] < vb["max_drawdown"]
+    vec_dd_word = "降至" if vec_dd_better else "升至"
+    vec_dd_contrib = "主要贡献是**降低回撤**" if vec_dd_better else "且**回撤反而更深**"
     L.append("**诚实结论（向量化）**：在该成分（多为事后已知的大市值、高流动性龙头）与区间内，"
              f"等权买入持有本身非常强势（累计 {_pct(vb['total_return'])}、夏普 {vb['sharpe']:.2f}）。"
-             f"动量策略累计收益 {_pct(vs['total_return'])}（低于基准约 {_pp(vec_ret_gap)}），"
+             f"动量策略累计收益 {_pct(vs['total_return'])}（{vec_ret_word}基准约 {_pp(vec_ret_gap)}），"
              f"夏普 {vs['sharpe']:.2f}（基准 {vb['sharpe']:.2f}）；"
-             f"但**最大回撤由 {_pct(vb['max_drawdown'])} 降至 {_pct(vs['max_drawdown'])}"
-             f"（降低约 {_pp(vec_dd_gain)}）**，卡玛与基准接近。"
-             "换言之，简单横截面动量在此未能跑赢强势的等权基准，主要贡献是**显著降低回撤**，"
+             f"最大回撤由 {_pct(vb['max_drawdown'])} {vec_dd_word} {_pct(vs['max_drawdown'])}"
+             f"（相差约 {_pp(vec_dd_gain)}）。"
+             f"换言之，简单横截面动量在此{'未能' if vec_ret_gap < 0 else '基本'}跑赢强势的等权基准，{vec_dd_contrib}，"
              "代价是更高的换手与成本。该结论对回看窗口/持仓数/调仓频率**较敏感**，"
              "且基准受成分**幸存者/选择偏差**美化，不应据此外推为可实盘复制的超额收益。")
     L.append("")
@@ -313,13 +317,17 @@ def build_report(meta: dict, vec: dict, evt: dict) -> str:
     L.append("")
     L.append(_metric_table(evt_rows))
     L.append("")
+    evt_dd_better = es["max_drawdown"] < eb["max_drawdown"]
+    evt_dd_word = "降至" if evt_dd_better else "升至"
+    evt_ret_word = "低于" if evt_ret_gap < 0 else "高于"
+    evt_tail = "以换取更平滑的净值与更低的回撤。" if evt_dd_better else "且此处回撤亦未改善。"
     L.append("**诚实结论（事件驱动）**："
-             f"双均线择时把最大回撤由 {_pct(eb['max_drawdown'])} 降至 {_pct(es['max_drawdown'])}"
-             f"（降低约 {_pp(evt_dd_gain)}），夏普 {es['sharpe']:.2f}（基准 {eb['sharpe']:.2f}，"
+             f"双均线择时把最大回撤由 {_pct(eb['max_drawdown'])} {evt_dd_word} {_pct(es['max_drawdown'])}"
+             f"（相差约 {_pp(evt_dd_gain)}），夏普 {es['sharpe']:.2f}（基准 {eb['sharpe']:.2f}，"
              f"差 {evt_sharpe_gap:+.2f}），索提诺 {es['sortino']:.2f}（基准 {eb['sortino']:.2f}）；"
-             f"但累计收益 {_pct(es['total_return'])} 低于买入持有的 {_pct(eb['total_return'])}"
-             f"（相差约 {_pp(evt_ret_gap)}）——趋势跟踪在单边上涨标的上常因**频繁进出、踏空反弹**而让渡部分涨幅，"
-             "以换取更平滑的净值与更低的回撤。"
+             f"累计收益 {_pct(es['total_return'])} {evt_ret_word}买入持有的 {_pct(eb['total_return'])}"
+             f"（相差约 {_pp(evt_ret_gap)}）——趋势跟踪在单边行情中常因**频繁进出、踏空反弹**而让渡部分涨幅，"
+             f"{evt_tail}"
              "**单标的择时高度依赖标的与参数**，此处仅为演示引擎在真实数据上的正确性与风险/收益取舍，"
              "并非推荐信号。")
     L.append("")
