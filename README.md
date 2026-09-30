@@ -1,5 +1,7 @@
 # Kairos Backtest
 
+[![CI](https://github.com/Bruce848647703/kairos-backtest/actions/workflows/ci.yml/badge.svg)](https://github.com/Bruce848647703/kairos-backtest/actions/workflows/ci.yml)
+
 > Kairos 量化系列的回测模块 —— 一个**自研、轻量、零重型依赖**的 Python 回测框架。
 
 `kairos_backtest` 提供两套互补的回测方式，以及完整的绩效分析与成本模型，
